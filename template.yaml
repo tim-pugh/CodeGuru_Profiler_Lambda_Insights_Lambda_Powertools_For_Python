@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  lambda-python3.9
+
+  Sample SAM Template for lambda-python3.9
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30 #Must increase the timeout period from the default of 3 seconds as the initialization takes some time with these 3 services during the init and execution phases. Beware of those cold starts!
+    Tracing: Active #https://serverless-observability.workshop.aws/en/070_tracing/active_tracing.html
+  Api:
+    TracingEnabled: true #https://serverless-observability.workshop.aws/en/070_tracing/active_tracing.html
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: hello_world/
+      Handler: app.lambda_handler #https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Careful at this step, did you run into a bug?! Be sure to provide your correct lambda handler
+      Runtime: python3.9
+      Layers:
+          - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPython:3 #https://awslabs.github.io/aws-lambda-powertools-python/latest/
+          - !Sub arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14 #https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versions.html
+#          - !Sub arn:aws:lambda:${AWS::Region}:157417159150:layer:AWSCodeGuruProfilerPythonAgentLambdaLayer:11 #https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html
+      Policies:
+          - CloudWatchLambdaInsightsExecutionRolePolicy #https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-Getting-Started-SAM-CLI.html
+          - AmazonCodeGuruProfilerAgentAccess #This is the same exact policy that is added to a Lambda function if you were to enable CodeGuru Profiler from the Lambda console. Go check it out: https://console.aws.amazon.com/iam/home#/policies/arn:aws:iam::aws:policy/AmazonCodeGuruProfilerAgentAccess$jsonEditor
+      Environment:
+        Variables:
+#          LAMBDA_INSIGHTS_LOG_LEVEL: info #https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-Getting-Started-SAM-CLI.html Enables Lambda Insights Debugging. You may disable/enable this
+#          AWS_LAMBDA_EXEC_WRAPPER: /opt/codeguru_profiler_lambda_exec #https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html
+          POWERTOOLS_METRICS_NAMESPACE: hello_world_metrics_namespace #https://awslabs.github.io/aws-lambda-powertools-python/latest/ and https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-lambda-powertools/
+          POWERTOOLS_SERVICE_NAME: hello_world_service_name #https://awslabs.github.io/aws-lambda-powertools-python/latest/ and https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-lambda-powertools/
+          POWERTOOLS_LOGGER_LOG_EVENT: true #https://awslabs.github.io/aws-lambda-powertools-python/latest/ and https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-lambda-powertools/
+          LOG_LEVEL: DEBUG #https://awslabs.github.io/aws-lambda-powertools-python/latest/ and https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-lambda-powertools/
+#          HANDLER_ENV_NAME_FOR_CODEGURU: app.lambda_handler #https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Careful at this step, did you run into a bug?! Be sure to provide your correct lambda handler
+          AWS_CODEGURU_PROFILER_GROUP_NAME: hello_world ##https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Be sure to go to console.aws.amazon.com/codeguru/home and create a profiling group before ever invoking this function!
+          PYTHONPROFILEIMPORTTIME: 1 #https://wa.aws.amazon.com/serv.question.PERF_1.en.html Look for PYTHONPROFILEIMPORTTIME=1
+
+
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hello
+            Method: get
+
+  MyProfilingGroup:
+    Type: AWS::CodeGuruProfiler::ProfilingGroup
+    Properties:
+      ProfilingGroupName: "hello_world"
+      ComputePlatform: "AWSLambda"
+      AgentPermissions:
+        Principals:
+          - !GetAtt HelloWorldFunctionRole.Arn
+    DependsOn: HelloWorldFunction
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
