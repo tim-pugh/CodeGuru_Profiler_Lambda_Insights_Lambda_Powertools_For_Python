@@ -14,7 +14,7 @@ This application demostrates a few things:
 - CodeGuru Python Lambda profiling
 - Lambda Powertools for Python
 - Profiling import time of Python modules
-- How to deploy a AWS SAM REST API using SAM templating, but avoiding the item mentioned in this github issue where it creates a stage named "Stage" by default: https://github.com/aws/serverless-application-model/issues/191
+- How to deploy an AWS SAM REST API using SAM templating, but avoiding the item mentioned in this github issue where it creates a stage named "Stage" by default: https://github.com/aws/serverless-application-model/issues/191
 
 This is intended for learning how to have a high degree of observability of your Lambda function, and all resources, decoumentation, and reference material is commented in the code or template.yaml.
 
