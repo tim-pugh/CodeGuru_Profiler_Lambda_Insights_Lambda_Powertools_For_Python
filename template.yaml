@@ -5,6 +5,11 @@ Description: >
 
   Sample SAM Template for lambda-python3.9
 
+Parameters:
+  CodeGuruProfilerGroupName:
+    Type: String
+    Default: pythonprofilerinsightspowertoolsimporttime ##https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Be sure to go to console.aws.amazon.com/codeguru/home and create a profiling group before ever invoking this function, or have it defined in this template! Recall, it MUST BE UNIQUE! Note: we're creating and referencing the profiling group in the template, view the property ProfilingGroupName.
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -12,6 +17,7 @@ Globals:
     Tracing: Active #https://serverless-observability.workshop.aws/en/070_tracing/active_tracing.html
   Api:
     TracingEnabled: true #https://serverless-observability.workshop.aws/en/070_tracing/active_tracing.html
+    OpenApiVersion: 3.0.1 # prevents the default "Stage" name from being deployed. Prevents creating a default stage. More on this issue can be read here: https://github.com/awslabs/serverless-application-model/issues/191 && documentation: #https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-api.html#sam-api-openapiversion
 
 Resources:
   HelloWorldFunction:
@@ -19,7 +25,7 @@ Resources:
     Properties:
       CodeUri: hello_world/
       Handler: app.lambda_handler #https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Careful at this step, did you run into a bug?! Be sure to provide your correct lambda handler
-      Runtime: python3.9
+      Runtime: python3.9 #if you get build errors, you may not have the same version of python installed on your local machine! Swap this out if that is the case!
       Layers:
           - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPython:3 #https://awslabs.github.io/aws-lambda-powertools-python/latest/
           - !Sub arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14 #https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versions.html
@@ -36,10 +42,9 @@ Resources:
           POWERTOOLS_LOGGER_LOG_EVENT: true #https://awslabs.github.io/aws-lambda-powertools-python/latest/ and https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-lambda-powertools/
           LOG_LEVEL: DEBUG #https://awslabs.github.io/aws-lambda-powertools-python/latest/ and https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-lambda-powertools/
 #          HANDLER_ENV_NAME_FOR_CODEGURU: app.lambda_handler #https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Careful at this step, did you run into a bug?! Be sure to provide your correct lambda handler
-          AWS_CODEGURU_PROFILER_GROUP_NAME: hello_world ##https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Be sure to go to console.aws.amazon.com/codeguru/home and create a profiling group before ever invoking this function!
           PYTHONPROFILEIMPORTTIME: 1 #https://wa.aws.amazon.com/serv.question.PERF_1.en.html Look for PYTHONPROFILEIMPORTTIME=1
-
-
+          AWS_CODEGURU_PROFILER_GROUP_NAME:
+            Ref: CodeGuruProfilerGroupName ##https://docs.aws.amazon.com/codeguru/latest/profiler-ug/python-lambda-layers.html Be sure to go to console.aws.amazon.com/codeguru/home and create a profiling group before ever invoking this function, or have it defined in this template! Recall, it MUST BE UNIQUE! Note: we're creating and referencing the profiling group in the template, view the property ProfilingGroupName.
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -50,7 +55,8 @@ Resources:
   MyProfilingGroup:
     Type: AWS::CodeGuruProfiler::ProfilingGroup
     Properties:
-      ProfilingGroupName: "hello_world"
+      ProfilingGroupName:
+        Ref: CodeGuruProfilerGroupName #this MUST be uniquely named and no other profiling group with the same name MUST pre-exist, else deployments will fail! Be sure to update the AWS_CODEGURU_PROFILER_GROUP_NAME property if this is not being picked up automatically!
       ComputePlatform: "AWSLambda"
       AgentPermissions:
         Principals:

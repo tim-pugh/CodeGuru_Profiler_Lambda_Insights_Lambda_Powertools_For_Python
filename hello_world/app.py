@@ -1,3 +1,4 @@
+#A deep dive into AWS Lambda observability brought to you by Tim Pugh! (https://github.com/tim-pugh/CodeGuru_Profiler_Lambda_Insights_Lambda_Powertools_For_Python)
 import json
 import os
 #import requests
@@ -53,7 +54,7 @@ def lambda_handler(event, context):
 
     #     raise e
 
-    time.sleep(1)
+    time.sleep(1) #Why do we sleep  here you may ask :) ? If you're python code is extra fast, code guru profiler may not have enough time to capture profiling data! So, we sleep, enabling codeguru profiler enough time to do its work, and disregard the sleep item in the profiler review. Note: this is NOT NECESSARY IF YOU'RE CODE BY DEFAULT EXECUTES LONG ENOUGH TO BE PROFILED SO CONSIDER REMOVING THIS SPECIFIC TO YOUR FUNCTION CODE!
     return {
         "statusCode": 200,
         "body": json.dumps({
