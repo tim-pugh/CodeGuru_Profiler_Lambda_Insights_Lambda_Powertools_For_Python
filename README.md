@@ -25,8 +25,13 @@ This is intended for learning how to have a high degree of observability of your
 
 <img width="1142" alt="Console" src="https://user-images.githubusercontent.com/22535268/160693385-ec7b95d1-fdd2-4b85-88ca-86716c3b05f1.png">
 
-Deployment steps:
+Prerequisites:
+- An AWS Account
+- The AWS CLI installed and configured
+- The AWS SAM CLI installed (supports Linux/Windows/MacOS) : https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html
+- Python 3.9 installed
 
+Deployment steps:
 ```
 sam build
 sam deploy --guided
