@@ -8,7 +8,7 @@ This is a SAM application that will deploy:
 - Python 3.9 Lambda Function
 - CodeGuru Profiler Group
 
-This application demostrates a few things:
+This application demonstrates a few things:
 
 - CloudWatch Lambda Insights
 - CodeGuru Python Lambda profiling
