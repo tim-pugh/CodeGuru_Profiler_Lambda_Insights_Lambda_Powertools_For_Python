@@ -38,6 +38,12 @@ sam deploy --guided
 sam delete <insert your provided stack name>
 ```
 
+Future additions (no gurantees):
+- Integrate AWS Appconfig and use its feature flag Lambda extension to enable/disable advanced observability without redeployments when errors occur.
+  - https://aws.amazon.com/blogs/mt/introducing-aws-appconfig-feature-flags-in-preview/
+  - https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html
+ - Recorded demo of all of the above (minus Prerequisites)
+
 Feel free to send pull requests or make issues should you have something to touch up, update, patch, or discuss.
 
 - T
